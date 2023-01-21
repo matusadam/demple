@@ -1,5 +1,7 @@
 import os, sys
 import struct
+import json
+from collections import namedtuple
 
 class Demo():
     def __init__(self, filename):
@@ -10,388 +12,142 @@ class Demo():
             print(f'File "{filename}" not found')
             sys.exit()
         self.filesize = self.file_stats.st_size
-
-        with open(filename, 'rb') as demo:
-            self._header = DemoHeader(demo)
-            self._directory = DemoDirectory(demo, self._header)       
-            self.__read_all(demo)
-
-    def __read_all(self, demo):
-
-        if self._header.demoProtocol != 5:
-            print('Only demo protocol 5 is supported. No frames were loaded.')
-            return
-
-        for entry in self._directory.directoryEntries:
-            self.__read_entry(demo, entry)
-            
-    def __read_entry(self, demo, entry):
-        MIN_FRAME_SIZE = 12
-        DemoFrameType = {
-            2 : DemoStartFrame,
-            3 : ConsoleCommandFrame,
-            4 : ClientDataFrame,
-            5 : NextSectionFrame,
-            6 : EventFrame,
-            7 : WeaponAnimFrame,
-            8 : SoundFrame,
-            9 : DemoBufferFrame
-        }
-        demo.seek(entry.offset)
-        run = True
-        frame_counter = 0
-        while run:
-            frame_counter += 1
-            if (self._demosize - demo.tell()) < MIN_FRAME_SIZE:
-                print('min frame size triggered', frame_counter)
-                break
-            frame_type = int.from_bytes(demo.read(1), byteorder='little')
-            frame_class = DemoFrameType.get(frame_type, NetMsgFrame)
-            frame = frame_class(demo, frame_type)
-            entry.frames.append( frame )
-            if frame_class == NextSectionFrame:
-                run = False
-
-    @property
-    def stats(self):
-        s = "Name: {}\nSize: {} bytes\n"
-        return s.format(
-            self._filename, 
-            self._demosize, 
-            )
-
-    @property
-    def header(self):
-        s = "Signature: {}\nDemo protocol: {}\nNetwork protocol: {}\nMap name: {}\nGame Dir: {}\nMap CRC: {}\nDirectory Offset: {}\n"
-        return s.format(
-            self._header.signature, 
-            self._header.demoProtocol, 
-            self._header.netProtocol,
-            self._header.mapName,
-            self._header.gameDir,
-            self._header.mapCRC,
-            self._header.directoryOffset
-        )
-
-    @property
-    def directory(self):
-        s = "Directory entry count: {}\n{}"
-        s_entries = "Entries:\n"
-        for entry in self._directory.directoryEntries:
-            s_entry = '  Type: {}\n  Description: {}\n  Frame count: {}\n  Offset: {}\n  File length: {}\n{}\n'.format(
-                entry.type,
-                entry.description,
-                entry.frameCount,
-                entry.offset,
-                entry.fileLength,
-                80*'-'
-            )
-            s_entries += s_entry
-        return s.format(
-            self._directory.dirEntryCount,
-            s_entries
-        )
-
-    @property
-    def playback_entry(self):
-        # search directory for playback entry
-        for entry in self._directory.directoryEntries:
-            if entry.type == 1:
-                return entry
-
-
-
-
-class DemoHeader():
-    def __init__(self, demo):
-
-        HEADER_SIZE = 544
-        HEADER_SIGNATURE_CHECK_SIZE = 6
-        HEADER_SIGNATURE_SIZE = 8
-        HEADER_MAPNAME_SIZE = 260
-        HEADER_GAMEDIR_SIZE = 260
-        demo.seek(0) # start of demo
-        self.signature = demo.read(6).decode('UTF-8').rstrip('\0')
-        if self.signature != 'HLDEMO':
-            print('Yo thats not HLDEMO')
+        self.f = open(filename, 'rb')
+        self.header = self.get_header()
+        self.directory = self.get_directory()
+        self.netmsgframe_struct = json.loads(open("netmsgframe_struct.json").read())
+        
+    def __unpack(self, tuple_name, field_names, format, buffer) -> namedtuple:
+        try:
+            s = struct.unpack(format, buffer)
+        except struct.error:
+            print("[!] Not valid HLDEMO file, exiting")
             sys.exit()
-        demo.seek(HEADER_SIGNATURE_SIZE) # start of demo + signature offset
-        self.demoProtocol = int.from_bytes(demo.read(4), byteorder='little')
-        self.netProtocol = int.from_bytes(demo.read(4), byteorder='little')
-        self.mapName = demo.read(HEADER_MAPNAME_SIZE).decode('UTF-8').rstrip('\0')
-        self.gameDir = demo.read(HEADER_GAMEDIR_SIZE).decode('UTF-8').rstrip('\0')
-        self.mapCRC = int.from_bytes(demo.read(4), byteorder='little')
-        self.directoryOffset = int.from_bytes(demo.read(4), byteorder='little')
+        else:
+            t = namedtuple(tuple_name, field_names)
+            t = t._make(s)
+            return t
 
+    def get_header(self) -> namedtuple:
+        HEADER_SIZE = 544
+        SIGNATURE_SIZE = 8
+        MAPNAME_SIZE = 260
+        GAMEDIR_SIZE = 260
+        self.f.seek(0)
+        header = self.__unpack(
+            'header',
+            'magic demo_protocol net_protocol mapname gamedir mapcrc dir_offset',
+            f'{SIGNATURE_SIZE}sii{MAPNAME_SIZE}s{GAMEDIR_SIZE}sii',
+            self.f.read(HEADER_SIZE)) 
+        if header.magic != b'HLDEMO\x00\x00':
+            print("[!] Not valid HLDEMO file (magic string not found), exiting")
+            sys.exit()
+        return header
 
-class DemoDirectory():
-    def __init__(self, demo, header):
-
+    def get_directory(self) -> list[namedtuple]:
         MIN_DIR_ENTRY_COUNT = 1
         MAX_DIR_ENTRY_COUNT = 1024
-        demo.seek(header.directoryOffset)
-        self.dirEntryCount = int.from_bytes(demo.read(4), byteorder='little')
-        if (self.dirEntryCount < MIN_DIR_ENTRY_COUNT) or (self.dirEntryCount > MAX_DIR_ENTRY_COUNT):
-            print('Incorrent directory entry count')
-            return
-        self.directoryEntries = list()
-        for i in range(self.dirEntryCount):
-            self.directoryEntries.append( DirectoryEntry(demo) )
-
-
-class DirectoryEntry():
-    def __init__(self, demo):
-
         DIR_ENTRY_SIZE = 92
         DIR_ENTRY_DESCRIPTION_SIZE = 64
-        self.type = int.from_bytes(demo.read(4), byteorder='little')
-        self.description = demo.read(DIR_ENTRY_DESCRIPTION_SIZE).decode('UTF-8').rstrip('\0')
-        self.flags = int.from_bytes(demo.read(4), byteorder='little')
-        self.CDTrack = int.from_bytes(demo.read(4), byteorder='little')
-        self.trackTime = struct.unpack('f', demo.read(4))
-        self.frameCount = int.from_bytes(demo.read(4), byteorder='little')
-        self.offset = int.from_bytes(demo.read(4), byteorder='little')
-        self.fileLength = int.from_bytes(demo.read(4), byteorder='little')
-        self.frames = list()
+        self.f.seek(self.header.dir_offset)
+        entry_count = struct.unpack('i', self.f.read(4))[0]
+        if not (MIN_DIR_ENTRY_COUNT <= entry_count <= MAX_DIR_ENTRY_COUNT):
+            print('[!] Not valid HLDEMO file (incorrect dir entry count), exiting')
+            sys.exit()
+        entries = list()
+        for _ in range(entry_count):
+            entry = self.__unpack(
+                'dir_entry',
+                'type description flags track track_time frame_count offset size',
+                f'i{DIR_ENTRY_DESCRIPTION_SIZE}siifiii',
+                self.f.read(DIR_ENTRY_SIZE))
+            entries.append(entry)
+        return entries
 
-    def frameTimes(self):
-        return [frame.time for frame in self.frames]
+    def get_frames(self, values: set[str]) -> list[namedtuple]:
+        # Find the Playback (type=1) dir entry and read the frames. The other entry
+        # is called LOADING (type=0), which normally doesn't contain any frames.
+        playback_entry = None
+        for e in self.directory:
+            if e.type == 1:
+                playback_entry = e
+        if not playback_entry:
+            print('[!] No Playback dir entry (not in-eye demo or corrupted), exiting')
+            sys.exit()
+        self.f.seek(playback_entry.offset)
+        frames = list()
+        for _ in range(playback_entry.frame_count):
+            # Parse frame and get only what is requested by user
+            subframe = self.get_frame(values)
+            if subframe:
+                frames.append(subframe)
+        return frames
 
-    def frameTypes(self):
-        return [frame.type for frame in self.frames]
+    def get_frame(self, values: set[str]) -> namedtuple:
+        frame_type = struct.unpack("B",self.f.read(1))[0]
+        BASE_FRAME_LENGTH = 8
 
-    def frameTypesAndTimes(self):
-        return [(frame.type, frame.time) for frame in self.frames]
+        match frame_type:
+            case 1:
+                
+                NETMSG_FRAME_LENGTH = BASE_FRAME_LENGTH + 468
+                MSGLEN_OFFSET = NETMSG_FRAME_LENGTH - 4
+                # Need to read msg length before unpacking
+                ptr = self.f.tell()
+                self.f.seek(ptr + MSGLEN_OFFSET)
+                msg_len = struct.unpack("i",self.f.read(4))[0]
+                self.f.seek(ptr)
 
-    def frameVerbose(self):
-        return [frame.getInfo() for frame in self.frames]
+                self.netmsgframe_struct.append(("msg",f"{msg_len}s"))
 
-    def consoleCommands(self):
-        return [frame for frame in self.frames if frame.type == 3]
+                frame = self.__unpack(
+                    'NetMsgFrame',
+                    " ".join(x[0] for x in self.netmsgframe_struct),
+                    "".join(x[1] for x in self.netmsgframe_struct),
+                    self.f.read(NETMSG_FRAME_LENGTH + msg_len))
 
+                self.netmsgframe_struct.pop()
+                # Get subset from given values
+                frame = {k: getattr(frame, k) for k in values}  
+                return frame
 
-
-class Frame():
-    def __init__(self, demo, type):
-        self.type = type
-        self.time = struct.unpack('f', demo.read(4))
-        self.frame = int.from_bytes(demo.read(4), byteorder='little')
-
-    def getBaseInfo(self):
-        return (self.type, self.time, self.frame)
-
-
-class DemoStartFrame(Frame):
-    def __init__(self, demo, type):
-        super().__init__(demo, type)
-
-    def getInfo(self):
-        return ( self.getBaseInfo() )
-
-
-class ConsoleCommandFrame(Frame):
-    def __init__(self, demo, type):
-        FRAME_CONSOLE_COMMAND_SIZE = 64
-        super().__init__(demo, type)
-        self.command = demo.read(FRAME_CONSOLE_COMMAND_SIZE).decode("utf-8") 
-
-    def getInfo(self):
-        return ( self.getBaseInfo(), self.command )
-
-
-class ClientDataFrame(Frame):
-    def __init__(self, demo, type):       
-        super().__init__(demo, type)
-        self.origin = [struct.unpack('f', demo.read(4)) for i in range(3)]
-        self.viewangles = [struct.unpack('f', demo.read(4)) for i in range(3)]
-        self.weaponBits = int.from_bytes(demo.read(4), byteorder='little')
-        self.fov = struct.unpack('f', demo.read(4))
-
-    def getInfo(self):
-        return ( self.getBaseInfo() )
-
-
-class NextSectionFrame(Frame):
-    def __init__(self, demo, type):
-        super().__init__(demo, type)
-
-    def getInfo(self):
-        return ( self.getBaseInfo() )
-
-
-class EventFrame(Frame):
-    def __init__(self, demo, type):
-        super().__init__(demo, type)
-        self.flags = int.from_bytes(demo.read(4), byteorder='little')
-        self.entity_index = int.from_bytes(demo.read(4), byteorder='little')
-        self.origin = [struct.unpack('f', demo.read(4)) for i in range(3)]
-        self.angles = [struct.unpack('f', demo.read(4)) for i in range(3)]
-        self.velocity = [struct.unpack('f', demo.read(4)) for i in range(3)]
-        self.ducking = int.from_bytes(demo.read(4), byteorder='little')
-        self.fparam1 = struct.unpack('f', demo.read(4))
-        self.fparam2 = struct.unpack('f', demo.read(4))
-        self.iparam1 = int.from_bytes(demo.read(4), byteorder='little')
-        self.iparam2 = int.from_bytes(demo.read(4), byteorder='little')
-        self.bparam1 = int.from_bytes(demo.read(4), byteorder='little')
-        self.bparam2 = int.from_bytes(demo.read(4), byteorder='little')
-
-    def getInfo(self):
-        return ( self.getBaseInfo() )
-
-class WeaponAnimFrame(Frame):
-    def __init__(self, demo, type):
-        super().__init__(demo, type)
-        self.anim = int.from_bytes(demo.read(4), byteorder='little')
-        self.body = int.from_bytes(demo.read(4), byteorder='little')
-
-    def getInfo(self):
-        return ( self.getBaseInfo() )
-
-
-class SoundFrame(Frame):
-    def __init__(self, demo, type):
-        super().__init__(demo, type)
-        self.channel = int.from_bytes(demo.read(4), byteorder='little')
-        self.length = int.from_bytes(demo.read(4), byteorder='little')
-        self.sample = demo.read(self.length)
-        self.attenuation = struct.unpack('f', demo.read(4))
-        self.volume = struct.unpack('f', demo.read(4))
-        self.flags = int.from_bytes(demo.read(4), byteorder='little')
-        self.pitch = int.from_bytes(demo.read(4), byteorder='little')
-
-    def getInfo(self):
-        return ( self.getBaseInfo() )
-
-class DemoBufferFrame(Frame):
-    def __init__(self, demo, type):
-        super().__init__(demo, type)
-        self.length = int.from_bytes(demo.read(4), byteorder='little')
-        self.buffer = demo.read(self.length)
-
-    def getInfo(self):
-        return ( self.getBaseInfo() )
-
-class DemoBufferFrame(Frame):
-    def __init__(self, demo, type):
-        super().__init__(demo, type)
-        self.length = int.from_bytes(demo.read(4), byteorder='little')
-        self.buffer = demo.read(self.length)
-
-    def getInfo(self):
-        return ( self.getBaseInfo() )
-
-class NetMsgFrame(Frame):
-    def __init__(self, demo, type):
-        MIN_MESSAGE_LENGTH = 0
-        MAX_MESSAGE_LENGTH = 65536
-        super().__init__(demo, type)
-        self.info = NetMsgInfo(demo)
-        self.incoming_sequence = int.from_bytes(demo.read(4), byteorder='little')
-        self.incoming_acknowledged = int.from_bytes(demo.read(4), byteorder='little')
-        self.incoming_reliable_acknowledged = int.from_bytes(demo.read(4), byteorder='little')
-        self.incoming_reliable_sequence = int.from_bytes(demo.read(4), byteorder='little')
-        self.outgoing_sequence = int.from_bytes(demo.read(4), byteorder='little')
-        self.reliable_sequence = int.from_bytes(demo.read(4), byteorder='little')
-        self.last_reliable_sequence = int.from_bytes(demo.read(4), byteorder='little')
-        self.msg_length = int.from_bytes(demo.read(4), byteorder='little')
-        self.msg = demo.read(self.msg_length)
-
-    def getInfo(self):
-        return ( self.getBaseInfo() )
-
-
-class NetMsgInfo():
-    def __init__(self, demo):
-        self.timestamp = struct.unpack('f', demo.read(4))
-        self.ref_params = RefParams(demo)
-        self.user_cmd = UserCmd(demo)
-        self.move_vars = MoveVars(demo)
-        self.view = [struct.unpack('f', demo.read(4)) for i in range(3)]
-        self.viewmodel = int.from_bytes(demo.read(4), byteorder='little')
-       
-        
-class RefParams():
-    def __init__(self, demo):
-        self.vieworg = [struct.unpack('f', demo.read(4)) for i in range(3)]
-        self.viewangles = [struct.unpack('f', demo.read(4)) for i in range(3)]
-        self.forward = [struct.unpack('f', demo.read(4)) for i in range(3)]
-        self.right = [struct.unpack('f', demo.read(4)) for i in range(3)]
-        self.up = [struct.unpack('f', demo.read(4)) for i in range(3)]
-        self.frametime = struct.unpack('f', demo.read(4))
-        self.time = struct.unpack('f', demo.read(4))
-        self.intermission = int.from_bytes(demo.read(4), byteorder='little')
-        self.paused = int.from_bytes(demo.read(4), byteorder='little')
-        self.spectator = int.from_bytes(demo.read(4), byteorder='little')
-        self.onground = int.from_bytes(demo.read(4), byteorder='little')
-        self.waterlevel = int.from_bytes(demo.read(4), byteorder='little')
-        self.simvel = [struct.unpack('f', demo.read(4)) for i in range(3)]
-        self.simorg = [struct.unpack('f', demo.read(4)) for i in range(3)]
-        self.viewheight = [struct.unpack('f', demo.read(4)) for i in range(3)]
-        self.idealpitch = struct.unpack('f', demo.read(4))
-        self.cl_viewangles = [struct.unpack('f', demo.read(4)) for i in range(3)]
-        self.health = int.from_bytes(demo.read(4), byteorder='little')
-        self.crosshairangle = [struct.unpack('f', demo.read(4)) for i in range(3)]
-        self.viewsize = struct.unpack('f', demo.read(4))
-        self.punchangle = [struct.unpack('f', demo.read(4)) for i in range(3)]
-        self.maxclients = int.from_bytes(demo.read(4), byteorder='little')
-        self.viewentity = int.from_bytes(demo.read(4), byteorder='little')
-        self.playernum = int.from_bytes(demo.read(4), byteorder='little')
-        self.max_entities = int.from_bytes(demo.read(4), byteorder='little')
-        self.demoplayback = int.from_bytes(demo.read(4), byteorder='little')
-        self.hardware = int.from_bytes(demo.read(4), byteorder='little')
-        self.smoothing = int.from_bytes(demo.read(4), byteorder='little')
-        self.ptr_cmd = int.from_bytes(demo.read(4), byteorder='little')
-        self.ptr_movevars = int.from_bytes(demo.read(4), byteorder='little')
-        self.viewport = [struct.unpack('f', demo.read(4)) for i in range(4)]
-        self.next_view = int.from_bytes(demo.read(4), byteorder='little')
-        self.only_client_draw = int.from_bytes(demo.read(4), byteorder='little')
-
-class UserCmd():
-    def __init__(self, demo):
-        self.lerp_msec = int.from_bytes(demo.read(2), byteorder='little')
-        self.msec = int.from_bytes(demo.read(1), byteorder='little')
-        align_1 = int.from_bytes(demo.read(1), byteorder='little')
-        self.viewangles = [struct.unpack('f', demo.read(4)) for i in range(3)]
-        self.forwardmove = struct.unpack('f', demo.read(4))
-        self.sidemove = struct.unpack('f', demo.read(4))
-        self.upmove = struct.unpack('f', demo.read(4))
-        self.lightlevel = int.from_bytes(demo.read(1), byteorder='little')
-        align_2 = int.from_bytes(demo.read(1), byteorder='little')
-        self.buttons = int.from_bytes(demo.read(2), byteorder='little')
-        self.impulse = int.from_bytes(demo.read(1), byteorder='little')
-        self.weaponselect = int.from_bytes(demo.read(1), byteorder='little')
-        align_3 = int.from_bytes(demo.read(1), byteorder='little')
-        align_4 = int.from_bytes(demo.read(1), byteorder='little')
-        self.impact_index = int.from_bytes(demo.read(4), byteorder='little')
-        self.impact_position = [struct.unpack('f', demo.read(4)) for i in range(3)]
-
-class MoveVars():
-    def __init__(self, demo):
-        self.gravity = struct.unpack('f', demo.read(4))
-        self.stopspeed = struct.unpack('f', demo.read(4))
-        self.maxspeed = struct.unpack('f', demo.read(4))
-        self.spectatormaxspeed = struct.unpack('f', demo.read(4))
-        self.accelerate = struct.unpack('f', demo.read(4))
-        self.airaccelerate = struct.unpack('f', demo.read(4))
-        self.wateraccelerate = struct.unpack('f', demo.read(4)) 
-        self.friction = struct.unpack('f', demo.read(4))
-        self.edgefriction = struct.unpack('f', demo.read(4))
-        self.waterfriction = struct.unpack('f', demo.read(4))
-        self.entgravity = struct.unpack('f', demo.read(4))
-        self.bounce = struct.unpack('f', demo.read(4))
-        self.stepsize = struct.unpack('f', demo.read(4))
-        self.maxvelocity = struct.unpack('f', demo.read(4))
-        self.zmax = struct.unpack('f', demo.read(4))
-        self.wave_height = struct.unpack('f', demo.read(4))
-        self.footsteps = int.from_bytes(demo.read(4), byteorder='little')
-        self.sky_name = demo.read(32)
-        self.rollangle = struct.unpack('f', demo.read(4))
-        self.rollspeed = struct.unpack('f', demo.read(4))
-        self.skycolor_r = struct.unpack('f', demo.read(4))
-        self.skycolor_g = struct.unpack('f', demo.read(4))
-        self.skycolor_b = struct.unpack('f', demo.read(4))
-        self.skyvec_x = struct.unpack('f', demo.read(4))
-        self.skyvec_y = struct.unpack('f', demo.read(4))
-        self.skyvec_z = struct.unpack('f', demo.read(4))
-
-
+            # Rest of the frames are not used but need to be parsed/read
+            case 2:
+                START_FRAME_LENGTH = BASE_FRAME_LENGTH + 0
+                self.f.read(START_FRAME_LENGTH)
+            case 3:
+                CONSOLECOMMAND_FRAME_LENGTH = BASE_FRAME_LENGTH + 64
+                self.f.read(CONSOLECOMMAND_FRAME_LENGTH)
+            case 4:
+                CLIENTDATA_FRAME_LENGTH = BASE_FRAME_LENGTH + 32
+                self.f.read(CLIENTDATA_FRAME_LENGTH)
+            case 5:
+                NEXTSECTION_FRAME_LENGTH = BASE_FRAME_LENGTH + 0
+                self.f.read(NEXTSECTION_FRAME_LENGTH)
+            case 6:
+                EVENT_FRAME_LENGTH = BASE_FRAME_LENGTH + 72
+                self.f.read(EVENT_FRAME_LENGTH)
+            case 7:
+                WEAPONANIM_FRAME_LENGTH = BASE_FRAME_LENGTH + 8
+                self.f.read(WEAPONANIM_FRAME_LENGTH)
+            case 8:
+                SOUND_FRAME_LENGTH = BASE_FRAME_LENGTH + 24
+                SAMPLE_LEN_OFFSET = 12
+                # Need to read sample length before unpacking
+                ptr = self.f.tell()
+                self.f.seek(ptr + SAMPLE_LEN_OFFSET)
+                sample_len = struct.unpack("i",self.f.read(4))[0]
+                self.f.seek(ptr)
+                self.f.read(SOUND_FRAME_LENGTH + sample_len)
+            case 9:
+                BUFFER_FRAME_LENGTH = BASE_FRAME_LENGTH + 4
+                BUFFER_LEN_OFFSET = 8
+                # Need to read buffer length before unpacking
+                ptr = self.f.tell()
+                self.f.seek(ptr + BUFFER_LEN_OFFSET)
+                buffer_len = struct.unpack("i",self.f.read(4))[0]
+                self.f.seek(ptr)
+                self.f.read(BUFFER_FRAME_LENGTH + buffer_len)
+            case _:
+                print(f"[!] Found unknown frame, exiting")
+                sys.exit()
