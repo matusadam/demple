@@ -2,21 +2,19 @@ import os, sys
 import struct
 
 class Demo():
-    def __init__(self, filename, full=True):
-        self._filename = filename
-        self._full = full
+    def __init__(self, filename):
+        self.filename = filename
         try:
-            self._file_stats = os.stat(filename)
-            self._demosize = self._file_stats.st_size
+            self.file_stats = os.stat(filename)
         except IOError:
-            print('File "{}" not found'.format(filename))
+            print(f'File "{filename}" not found')
             sys.exit()
+        self.filesize = self.file_stats.st_size
 
         with open(filename, 'rb') as demo:
             self._header = DemoHeader(demo)
-            self._directory = DemoDirectory(demo, self._header)
-            if full:
-                self.__read_all(demo)
+            self._directory = DemoDirectory(demo, self._header)       
+            self.__read_all(demo)
 
     def __read_all(self, demo):
 
