@@ -13,7 +13,7 @@ class Demo():
             sys.exit()
         self.filesize = self.file_stats.st_size
         self.f = open(filename, 'rb')
-        self.netmsgframe_struct = json.loads(open("netmsgframe_struct.json").read())
+        self.structs = json.loads(open("structs.json").read())
         self.header = self.get_header()
         self.directory = self.get_directory()
            
@@ -21,8 +21,6 @@ class Demo():
         try:
             s = struct.unpack(format, buffer)
         except struct.error as e:
-            print(e)
-            print(f"actual buffer is {len(buffer)}")
             print("[!] Not valid HLDEMO file, exiting")
             sys.exit()
         else:
@@ -30,8 +28,20 @@ class Demo():
             t = t._make(s)
             return t
 
-    def parse(self):
-        self.frames = self.get_frames()
+    def __partial_unpack(self, tuple_name, buffer, framestruct) -> namedtuple:
+        fields = self.fields
+        ret = namedtuple(tuple_name, fields)
+        ready = []
+        for field in fields:
+            t = framestruct[field]['t']
+            offset = framestruct[field]['offset']
+            size = framestruct[field]['size']
+            ready.append(struct.unpack("="+t, buffer[offset:offset+size])[0])
+        ret = ret._make(ready)
+        return ret
+
+    def parse(self, fields: list) -> int:
+        self.frames = self.get_frames(fields)
         return len(self.frames)
 
     def get_header(self) -> namedtuple:
@@ -70,7 +80,7 @@ class Demo():
             entries.append(entry)
         return entries
 
-    def get_frames(self) -> list[namedtuple]:
+    def get_frames(self, fields: list) -> list[tuple]:
         # Find the Playback (type=1) dir entry and read the frames. The other entry
         # is called LOADING (type=0), which normally doesn't contain any frames.
         playback_entry = None
@@ -84,39 +94,48 @@ class Demo():
         self.f.seek(playback_entry.offset)
         self.raw_playback = self.f.read(playback_entry.size)
         self.ptr = 0
+        self.fields = fields
 
         frames = list()
         while True:
             subframe = self.get_frame()
             if subframe:
-                if subframe.type == 5:
+                if type(subframe).__name__ == "NextSectionFrame":
                     # NextSection frame is the last frame in Playback
                     break
                 frames.append(subframe)
         return frames
 
     def get_frame(self) -> namedtuple:
+        BASE_FRAME_LENGTH = 9
         p = self.ptr
         frame_type = struct.unpack("B", self.raw_playback[p:p+1])[0]
-        BASE_FRAME_LENGTH = 9
-
+        
         match frame_type:
             case 1:          
                 NETMSG_FRAME_LENGTH = BASE_FRAME_LENGTH + 468
                 MSGLEN_OFFSET = NETMSG_FRAME_LENGTH - 4
+                FRAME_NAME = 'NetMsgFrame'
+
+                netmsgframe_struct = self.structs[FRAME_NAME]
 
                 # Need to read msg length before unpacking
                 msg_len = struct.unpack("i", self.raw_playback[p + MSGLEN_OFFSET: p + MSGLEN_OFFSET + 4])[0]
+                netmsgframe_struct['msg']['t'] = f"{msg_len}s"
+                netmsgframe_struct['msg']['size'] = msg_len
 
-                self.netmsgframe_struct.append(("msg",f"{msg_len}s"))
+                if self.fields:
+                    frame = self.__partial_unpack(
+                        FRAME_NAME,
+                        self.raw_playback[p: p + NETMSG_FRAME_LENGTH + msg_len],
+                        netmsgframe_struct)
+                else:
+                    frame = self.__unpack(
+                        FRAME_NAME,
+                        " ".join(k for k in netmsgframe_struct),
+                        "=" + "".join(v['t'] for v in netmsgframe_struct.values()),
+                        self.raw_playback[p: p + NETMSG_FRAME_LENGTH + msg_len])
 
-                frame = self.__unpack(
-                    'NetMsgFrame',
-                    " ".join(x[0] for x in self.netmsgframe_struct),
-                    "=" + "".join(x[1] for x in self.netmsgframe_struct),
-                    self.raw_playback[p: p + NETMSG_FRAME_LENGTH + msg_len])
-
-                self.netmsgframe_struct.pop()
                 self.ptr += NETMSG_FRAME_LENGTH + msg_len
                 return frame
 

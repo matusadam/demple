@@ -1,0 +1,579 @@
+{
+    "NetMsgFrame": {
+        "type": {
+            "t": "B",
+            "offset": 0,
+            "size": 1
+        },
+        "time": {
+            "t": "f",
+            "offset": 1,
+            "size": 4
+        },
+        "frame": {
+            "t": "i",
+            "offset": 5,
+            "size": 4
+        },
+        "timestamp": {
+            "t": "f",
+            "offset": 9,
+            "size": 4
+        },
+        "vieworg_x": {
+            "t": "f",
+            "offset": 13,
+            "size": 4
+        },
+        "vieworg_y": {
+            "t": "f",
+            "offset": 17,
+            "size": 4
+        },
+        "vieworg_z": {
+            "t": "f",
+            "offset": 21,
+            "size": 4
+        },
+        "viewangles_x": {
+            "t": "f",
+            "offset": 25,
+            "size": 4
+        },
+        "viewangles_y": {
+            "t": "f",
+            "offset": 29,
+            "size": 4
+        },
+        "viewangles_z": {
+            "t": "f",
+            "offset": 33,
+            "size": 4
+        },
+        "forward_x": {
+            "t": "f",
+            "offset": 37,
+            "size": 4
+        },
+        "forward_y": {
+            "t": "f",
+            "offset": 41,
+            "size": 4
+        },
+        "forward_z": {
+            "t": "f",
+            "offset": 45,
+            "size": 4
+        },
+        "right_x": {
+            "t": "f",
+            "offset": 49,
+            "size": 4
+        },
+        "right_y": {
+            "t": "f",
+            "offset": 53,
+            "size": 4
+        },
+        "right_z": {
+            "t": "f",
+            "offset": 57,
+            "size": 4
+        },
+        "up_x": {
+            "t": "f",
+            "offset": 61,
+            "size": 4
+        },
+        "up_y": {
+            "t": "f",
+            "offset": 65,
+            "size": 4
+        },
+        "up_z": {
+            "t": "f",
+            "offset": 69,
+            "size": 4
+        },
+        "frametime": {
+            "t": "f",
+            "offset": 73,
+            "size": 4
+        },
+        "nettime": {
+            "t": "f",
+            "offset": 77,
+            "size": 4
+        },
+        "intermission": {
+            "t": "i",
+            "offset": 81,
+            "size": 4
+        },
+        "paused": {
+            "t": "i",
+            "offset": 85,
+            "size": 4
+        },
+        "spectator": {
+            "t": "i",
+            "offset": 89,
+            "size": 4
+        },
+        "onground": {
+            "t": "i",
+            "offset": 93,
+            "size": 4
+        },
+        "waterlevel": {
+            "t": "i",
+            "offset": 97,
+            "size": 4
+        },
+        "simvel_x": {
+            "t": "f",
+            "offset": 101,
+            "size": 4
+        },
+        "simvel_y": {
+            "t": "f",
+            "offset": 105,
+            "size": 4
+        },
+        "simvel_z": {
+            "t": "f",
+            "offset": 109,
+            "size": 4
+        },
+        "simorg_x": {
+            "t": "f",
+            "offset": 113,
+            "size": 4
+        },
+        "simorg_y": {
+            "t": "f",
+            "offset": 117,
+            "size": 4
+        },
+        "simorg_z": {
+            "t": "f",
+            "offset": 121,
+            "size": 4
+        },
+        "viewheight_x": {
+            "t": "f",
+            "offset": 125,
+            "size": 4
+        },
+        "viewheight_y": {
+            "t": "f",
+            "offset": 129,
+            "size": 4
+        },
+        "viewheight_z": {
+            "t": "f",
+            "offset": 133,
+            "size": 4
+        },
+        "idealpitch": {
+            "t": "f",
+            "offset": 137,
+            "size": 4
+        },
+        "cl_viewangles_x": {
+            "t": "f",
+            "offset": 141,
+            "size": 4
+        },
+        "cl_viewangles_y": {
+            "t": "f",
+            "offset": 145,
+            "size": 4
+        },
+        "cl_viewangles_z": {
+            "t": "f",
+            "offset": 149,
+            "size": 4
+        },
+        "health": {
+            "t": "i",
+            "offset": 153,
+            "size": 4
+        },
+        "crosshairangle_x": {
+            "t": "f",
+            "offset": 157,
+            "size": 4
+        },
+        "crosshairangle_y": {
+            "t": "f",
+            "offset": 161,
+            "size": 4
+        },
+        "crosshairangle_z": {
+            "t": "f",
+            "offset": 165,
+            "size": 4
+        },
+        "viewsize": {
+            "t": "f",
+            "offset": 169,
+            "size": 4
+        },
+        "punchangle_x": {
+            "t": "f",
+            "offset": 173,
+            "size": 4
+        },
+        "punchangle_y": {
+            "t": "f",
+            "offset": 177,
+            "size": 4
+        },
+        "punchangle_z": {
+            "t": "f",
+            "offset": 181,
+            "size": 4
+        },
+        "maxclients": {
+            "t": "i",
+            "offset": 185,
+            "size": 4
+        },
+        "viewentity": {
+            "t": "i",
+            "offset": 189,
+            "size": 4
+        },
+        "playernum": {
+            "t": "i",
+            "offset": 193,
+            "size": 4
+        },
+        "max_entities": {
+            "t": "i",
+            "offset": 197,
+            "size": 4
+        },
+        "demoplayback": {
+            "t": "i",
+            "offset": 201,
+            "size": 4
+        },
+        "hardware": {
+            "t": "i",
+            "offset": 205,
+            "size": 4
+        },
+        "smoothing": {
+            "t": "i",
+            "offset": 209,
+            "size": 4
+        },
+        "ptr_cmd": {
+            "t": "i",
+            "offset": 213,
+            "size": 4
+        },
+        "ptr_movevars": {
+            "t": "i",
+            "offset": 217,
+            "size": 4
+        },
+        "viewport": {
+            "t": "16s",
+            "offset": 221,
+            "size": 16
+        },
+        "next_view": {
+            "t": "i",
+            "offset": 237,
+            "size": 4
+        },
+        "only_client_draw": {
+            "t": "i",
+            "offset": 241,
+            "size": 4
+        },
+        "lerp_msec": {
+            "t": "h",
+            "offset": 245,
+            "size": 2
+        },
+        "msec": {
+            "t": "h",
+            "offset": 247,
+            "size": 2
+        },
+        "viewangles2_x": {
+            "t": "f",
+            "offset": 249,
+            "size": 4
+        },
+        "viewangles2_y": {
+            "t": "f",
+            "offset": 253,
+            "size": 4
+        },
+        "viewangles2_z": {
+            "t": "f",
+            "offset": 257,
+            "size": 4
+        },
+        "forwardmove": {
+            "t": "f",
+            "offset": 261,
+            "size": 4
+        },
+        "sidemove": {
+            "t": "f",
+            "offset": 265,
+            "size": 4
+        },
+        "upmove": {
+            "t": "f",
+            "offset": 269,
+            "size": 4
+        },
+        "lightlevel": {
+            "t": "h",
+            "offset": 273,
+            "size": 2
+        },
+        "buttons": {
+            "t": "H",
+            "offset": 275,
+            "size": 2
+        },
+        "impulse": {
+            "t": "b",
+            "offset": 277,
+            "size": 1
+        },
+        "weaponselect": {
+            "t": "b",
+            "offset": 278,
+            "size": 1
+        },
+        "align": {
+            "t": "h",
+            "offset": 279,
+            "size": 2
+        },
+        "impact_index": {
+            "t": "i",
+            "offset": 281,
+            "size": 4
+        },
+        "impact_position_x": {
+            "t": "f",
+            "offset": 285,
+            "size": 4
+        },
+        "impact_position_y": {
+            "t": "f",
+            "offset": 289,
+            "size": 4
+        },
+        "impact_position_z": {
+            "t": "f",
+            "offset": 293,
+            "size": 4
+        },
+        "gravity": {
+            "t": "f",
+            "offset": 297,
+            "size": 4
+        },
+        "stopspeed": {
+            "t": "f",
+            "offset": 301,
+            "size": 4
+        },
+        "maxspeed": {
+            "t": "f",
+            "offset": 305,
+            "size": 4
+        },
+        "spectatormaxspeed": {
+            "t": "f",
+            "offset": 309,
+            "size": 4
+        },
+        "accelerate": {
+            "t": "f",
+            "offset": 313,
+            "size": 4
+        },
+        "airaccelerate": {
+            "t": "f",
+            "offset": 317,
+            "size": 4
+        },
+        "wateraccelerate": {
+            "t": "f",
+            "offset": 321,
+            "size": 4
+        },
+        "friction": {
+            "t": "f",
+            "offset": 325,
+            "size": 4
+        },
+        "edgefriction": {
+            "t": "f",
+            "offset": 329,
+            "size": 4
+        },
+        "waterfriction": {
+            "t": "f",
+            "offset": 333,
+            "size": 4
+        },
+        "entgravity": {
+            "t": "f",
+            "offset": 337,
+            "size": 4
+        },
+        "bounce": {
+            "t": "f",
+            "offset": 341,
+            "size": 4
+        },
+        "stepsize": {
+            "t": "f",
+            "offset": 345,
+            "size": 4
+        },
+        "maxvelocity": {
+            "t": "f",
+            "offset": 349,
+            "size": 4
+        },
+        "zmax": {
+            "t": "f",
+            "offset": 353,
+            "size": 4
+        },
+        "wave_height": {
+            "t": "f",
+            "offset": 357,
+            "size": 4
+        },
+        "footsteps": {
+            "t": "i",
+            "offset": 361,
+            "size": 4
+        },
+        "sky_name": {
+            "t": "32s",
+            "offset": 365,
+            "size": 32
+        },
+        "rollangle": {
+            "t": "f",
+            "offset": 397,
+            "size": 4
+        },
+        "rollspeed": {
+            "t": "f",
+            "offset": 401,
+            "size": 4
+        },
+        "skycolor_r": {
+            "t": "f",
+            "offset": 405,
+            "size": 4
+        },
+        "skycolor_g": {
+            "t": "f",
+            "offset": 409,
+            "size": 4
+        },
+        "skycolor_b": {
+            "t": "f",
+            "offset": 413,
+            "size": 4
+        },
+        "skyvec_x": {
+            "t": "f",
+            "offset": 417,
+            "size": 4
+        },
+        "skyvec_y": {
+            "t": "f",
+            "offset": 421,
+            "size": 4
+        },
+        "skyvec_z": {
+            "t": "f",
+            "offset": 425,
+            "size": 4
+        },
+        "view_x": {
+            "t": "f",
+            "offset": 429,
+            "size": 4
+        },
+        "view_y": {
+            "t": "f",
+            "offset": 433,
+            "size": 4
+        },
+        "view_z": {
+            "t": "f",
+            "offset": 437,
+            "size": 4
+        },
+        "viewmodel": {
+            "t": "i",
+            "offset": 441,
+            "size": 4
+        },
+        "incoming_sequence": {
+            "t": "i",
+            "offset": 445,
+            "size": 4
+        },
+        "incoming_acknowledged": {
+            "t": "i",
+            "offset": 449,
+            "size": 4
+        },
+        "incoming_reliable_acknowledged": {
+            "t": "i",
+            "offset": 453,
+            "size": 4
+        },
+        "incoming_reliable_sequence": {
+            "t": "i",
+            "offset": 457,
+            "size": 4
+        },
+        "outgoing_sequence": {
+            "t": "i",
+            "offset": 461,
+            "size": 4
+        },
+        "reliable_sequence": {
+            "t": "i",
+            "offset": 465,
+            "size": 4
+        },
+        "last_reliable_sequence": {
+            "t": "i",
+            "offset": 469,
+            "size": 4
+        },
+        "msg_length": {
+            "t": "i",
+            "offset": 473,
+            "size": 4
+        },
+        "msg": {
+            "t": "1s",
+            "offset": 477,
+            "size": 1
+        }
+    }
+}
