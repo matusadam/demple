@@ -13,20 +13,26 @@ class Demo():
             sys.exit()
         self.filesize = self.file_stats.st_size
         self.f = open(filename, 'rb')
+        self.netmsgframe_struct = json.loads(open("netmsgframe_struct.json").read())
         self.header = self.get_header()
         self.directory = self.get_directory()
-        self.netmsgframe_struct = json.loads(open("netmsgframe_struct.json").read())
-        
+           
     def __unpack(self, tuple_name, field_names, format, buffer) -> namedtuple:
         try:
             s = struct.unpack(format, buffer)
-        except struct.error:
+        except struct.error as e:
+            print(e)
+            print(f"actual buffer is {len(buffer)}")
             print("[!] Not valid HLDEMO file, exiting")
             sys.exit()
         else:
             t = namedtuple(tuple_name, field_names)
             t = t._make(s)
             return t
+
+    def parse(self):
+        self.frames = self.get_frames()
+        return len(self.frames)
 
     def get_header(self) -> namedtuple:
         HEADER_SIZE = 544
@@ -64,7 +70,7 @@ class Demo():
             entries.append(entry)
         return entries
 
-    def get_frames(self, values: set[str]) -> list[namedtuple]:
+    def get_frames(self) -> list[namedtuple]:
         # Find the Playback (type=1) dir entry and read the frames. The other entry
         # is called LOADING (type=0), which normally doesn't contain any frames.
         playback_entry = None
@@ -74,80 +80,83 @@ class Demo():
         if not playback_entry:
             print('[!] No Playback dir entry (not in-eye demo or corrupted), exiting')
             sys.exit()
+
         self.f.seek(playback_entry.offset)
+        self.raw_playback = self.f.read(playback_entry.size)
+        self.ptr = 0
+
         frames = list()
-        for _ in range(playback_entry.frame_count):
-            # Parse frame and get only what is requested by user
-            subframe = self.get_frame(values)
+        while True:
+            subframe = self.get_frame()
             if subframe:
+                if subframe.type == 5:
+                    # NextSection frame is the last frame in Playback
+                    break
                 frames.append(subframe)
         return frames
 
-    def get_frame(self, values: set[str]) -> namedtuple:
-        frame_type = struct.unpack("B",self.f.read(1))[0]
-        BASE_FRAME_LENGTH = 8
+    def get_frame(self) -> namedtuple:
+        p = self.ptr
+        frame_type = struct.unpack("B", self.raw_playback[p:p+1])[0]
+        BASE_FRAME_LENGTH = 9
 
         match frame_type:
-            case 1:
-                
+            case 1:          
                 NETMSG_FRAME_LENGTH = BASE_FRAME_LENGTH + 468
                 MSGLEN_OFFSET = NETMSG_FRAME_LENGTH - 4
+
                 # Need to read msg length before unpacking
-                ptr = self.f.tell()
-                self.f.seek(ptr + MSGLEN_OFFSET)
-                msg_len = struct.unpack("i",self.f.read(4))[0]
-                self.f.seek(ptr)
+                msg_len = struct.unpack("i", self.raw_playback[p + MSGLEN_OFFSET: p + MSGLEN_OFFSET + 4])[0]
 
                 self.netmsgframe_struct.append(("msg",f"{msg_len}s"))
 
                 frame = self.__unpack(
                     'NetMsgFrame',
                     " ".join(x[0] for x in self.netmsgframe_struct),
-                    "".join(x[1] for x in self.netmsgframe_struct),
-                    self.f.read(NETMSG_FRAME_LENGTH + msg_len))
+                    "=" + "".join(x[1] for x in self.netmsgframe_struct),
+                    self.raw_playback[p: p + NETMSG_FRAME_LENGTH + msg_len])
 
                 self.netmsgframe_struct.pop()
-                # Get subset from given values
-                frame = {k: getattr(frame, k) for k in values}  
+                self.ptr += NETMSG_FRAME_LENGTH + msg_len
                 return frame
 
             # Rest of the frames are not used but need to be parsed/read
             case 2:
                 START_FRAME_LENGTH = BASE_FRAME_LENGTH + 0
-                self.f.read(START_FRAME_LENGTH)
+                self.ptr += START_FRAME_LENGTH
             case 3:
                 CONSOLECOMMAND_FRAME_LENGTH = BASE_FRAME_LENGTH + 64
-                self.f.read(CONSOLECOMMAND_FRAME_LENGTH)
+                self.ptr += CONSOLECOMMAND_FRAME_LENGTH
             case 4:
                 CLIENTDATA_FRAME_LENGTH = BASE_FRAME_LENGTH + 32
-                self.f.read(CLIENTDATA_FRAME_LENGTH)
+                self.ptr += CLIENTDATA_FRAME_LENGTH
             case 5:
-                NEXTSECTION_FRAME_LENGTH = BASE_FRAME_LENGTH + 0
-                self.f.read(NEXTSECTION_FRAME_LENGTH)
+                NEXTSECTION_FRAME_LENGTH = BASE_FRAME_LENGTH + 0       
+                frame = self.__unpack(
+                    'NextSectionFrame',
+                    "type time frame",
+                    "=Bfi",
+                    self.raw_playback[p: p + NEXTSECTION_FRAME_LENGTH])
+                self.ptr += NEXTSECTION_FRAME_LENGTH
+                return frame
             case 6:
                 EVENT_FRAME_LENGTH = BASE_FRAME_LENGTH + 72
-                self.f.read(EVENT_FRAME_LENGTH)
+                self.ptr += EVENT_FRAME_LENGTH
             case 7:
                 WEAPONANIM_FRAME_LENGTH = BASE_FRAME_LENGTH + 8
-                self.f.read(WEAPONANIM_FRAME_LENGTH)
+                self.ptr += WEAPONANIM_FRAME_LENGTH
             case 8:
                 SOUND_FRAME_LENGTH = BASE_FRAME_LENGTH + 24
-                SAMPLE_LEN_OFFSET = 12
+                SAMPLE_LEN_OFFSET = BASE_FRAME_LENGTH + 4
                 # Need to read sample length before unpacking
-                ptr = self.f.tell()
-                self.f.seek(ptr + SAMPLE_LEN_OFFSET)
-                sample_len = struct.unpack("i",self.f.read(4))[0]
-                self.f.seek(ptr)
-                self.f.read(SOUND_FRAME_LENGTH + sample_len)
+                sample_len = struct.unpack("i", self.raw_playback[p + SAMPLE_LEN_OFFSET: p + SAMPLE_LEN_OFFSET + 4])[0]
+                self.ptr += SOUND_FRAME_LENGTH + sample_len
             case 9:
                 BUFFER_FRAME_LENGTH = BASE_FRAME_LENGTH + 4
-                BUFFER_LEN_OFFSET = 8
+                BUFFER_LEN_OFFSET = BASE_FRAME_LENGTH
                 # Need to read buffer length before unpacking
-                ptr = self.f.tell()
-                self.f.seek(ptr + BUFFER_LEN_OFFSET)
-                buffer_len = struct.unpack("i",self.f.read(4))[0]
-                self.f.seek(ptr)
-                self.f.read(BUFFER_FRAME_LENGTH + buffer_len)
+                buffer_len = struct.unpack("i", self.raw_playback[p + BUFFER_LEN_OFFSET: p + BUFFER_LEN_OFFSET + 4])[0]
+                self.ptr += BUFFER_FRAME_LENGTH + buffer_len
             case _:
                 print(f"[!] Found unknown frame, exiting")
                 sys.exit()
