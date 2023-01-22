@@ -3,577 +3,692 @@
         "type": {
             "t": "B",
             "offset": 0,
+            "order": 0,
             "size": 1
         },
         "time": {
             "t": "f",
             "offset": 1,
+            "order": 1,
             "size": 4
         },
         "frame": {
             "t": "i",
             "offset": 5,
+            "order": 2,
             "size": 4
         },
         "timestamp": {
             "t": "f",
             "offset": 9,
+            "order": 3,
             "size": 4
         },
         "vieworg_x": {
             "t": "f",
             "offset": 13,
+            "order": 4,
             "size": 4
         },
         "vieworg_y": {
             "t": "f",
             "offset": 17,
+            "order": 5,
             "size": 4
         },
         "vieworg_z": {
             "t": "f",
             "offset": 21,
+            "order": 6,
             "size": 4
         },
         "viewangles_x": {
             "t": "f",
             "offset": 25,
+            "order": 7,
             "size": 4
         },
         "viewangles_y": {
             "t": "f",
             "offset": 29,
+            "order": 8,
             "size": 4
         },
         "viewangles_z": {
             "t": "f",
             "offset": 33,
+            "order": 9,
             "size": 4
         },
         "forward_x": {
             "t": "f",
             "offset": 37,
+            "order": 10,
             "size": 4
         },
         "forward_y": {
             "t": "f",
             "offset": 41,
+            "order": 11,
             "size": 4
         },
         "forward_z": {
             "t": "f",
             "offset": 45,
+            "order": 12,
             "size": 4
         },
         "right_x": {
             "t": "f",
             "offset": 49,
+            "order": 13,
             "size": 4
         },
         "right_y": {
             "t": "f",
             "offset": 53,
+            "order": 14,
             "size": 4
         },
         "right_z": {
             "t": "f",
             "offset": 57,
+            "order": 15,
             "size": 4
         },
         "up_x": {
             "t": "f",
             "offset": 61,
+            "order": 16,
             "size": 4
         },
         "up_y": {
             "t": "f",
             "offset": 65,
+            "order": 17,
             "size": 4
         },
         "up_z": {
             "t": "f",
             "offset": 69,
+            "order": 18,
             "size": 4
         },
         "frametime": {
             "t": "f",
             "offset": 73,
+            "order": 19,
             "size": 4
         },
         "nettime": {
             "t": "f",
             "offset": 77,
+            "order": 20,
             "size": 4
         },
         "intermission": {
             "t": "i",
             "offset": 81,
+            "order": 21,
             "size": 4
         },
         "paused": {
             "t": "i",
             "offset": 85,
+            "order": 22,
             "size": 4
         },
         "spectator": {
             "t": "i",
             "offset": 89,
+            "order": 23,
             "size": 4
         },
         "onground": {
             "t": "i",
             "offset": 93,
+            "order": 24,
             "size": 4
         },
         "waterlevel": {
             "t": "i",
             "offset": 97,
+            "order": 25,
             "size": 4
         },
         "simvel_x": {
             "t": "f",
             "offset": 101,
+            "order": 26,
             "size": 4
         },
         "simvel_y": {
             "t": "f",
             "offset": 105,
+            "order": 27,
             "size": 4
         },
         "simvel_z": {
             "t": "f",
             "offset": 109,
+            "order": 28,
             "size": 4
         },
         "simorg_x": {
             "t": "f",
             "offset": 113,
+            "order": 29,
             "size": 4
         },
         "simorg_y": {
             "t": "f",
             "offset": 117,
+            "order": 30,
             "size": 4
         },
         "simorg_z": {
             "t": "f",
             "offset": 121,
+            "order": 31,
             "size": 4
         },
         "viewheight_x": {
             "t": "f",
             "offset": 125,
+            "order": 32,
             "size": 4
         },
         "viewheight_y": {
             "t": "f",
             "offset": 129,
+            "order": 33,
             "size": 4
         },
         "viewheight_z": {
             "t": "f",
             "offset": 133,
+            "order": 34,
             "size": 4
         },
         "idealpitch": {
             "t": "f",
             "offset": 137,
+            "order": 35,
             "size": 4
         },
         "cl_viewangles_x": {
             "t": "f",
             "offset": 141,
+            "order": 36,
             "size": 4
         },
         "cl_viewangles_y": {
             "t": "f",
             "offset": 145,
+            "order": 37,
             "size": 4
         },
         "cl_viewangles_z": {
             "t": "f",
             "offset": 149,
+            "order": 38,
             "size": 4
         },
         "health": {
             "t": "i",
             "offset": 153,
+            "order": 39,
             "size": 4
         },
         "crosshairangle_x": {
             "t": "f",
             "offset": 157,
+            "order": 40,
             "size": 4
         },
         "crosshairangle_y": {
             "t": "f",
             "offset": 161,
+            "order": 41,
             "size": 4
         },
         "crosshairangle_z": {
             "t": "f",
             "offset": 165,
+            "order": 42,
             "size": 4
         },
         "viewsize": {
             "t": "f",
             "offset": 169,
+            "order": 43,
             "size": 4
         },
         "punchangle_x": {
             "t": "f",
             "offset": 173,
+            "order": 44,
             "size": 4
         },
         "punchangle_y": {
             "t": "f",
             "offset": 177,
+            "order": 45,
             "size": 4
         },
         "punchangle_z": {
             "t": "f",
             "offset": 181,
+            "order": 46,
             "size": 4
         },
         "maxclients": {
             "t": "i",
             "offset": 185,
+            "order": 47,
             "size": 4
         },
         "viewentity": {
             "t": "i",
             "offset": 189,
+            "order": 48,
             "size": 4
         },
         "playernum": {
             "t": "i",
             "offset": 193,
+            "order": 49,
             "size": 4
         },
         "max_entities": {
             "t": "i",
             "offset": 197,
+            "order": 50,
             "size": 4
         },
         "demoplayback": {
             "t": "i",
             "offset": 201,
+            "order": 51,
             "size": 4
         },
         "hardware": {
             "t": "i",
             "offset": 205,
+            "order": 52,
             "size": 4
         },
         "smoothing": {
             "t": "i",
             "offset": 209,
+            "order": 53,
             "size": 4
         },
         "ptr_cmd": {
             "t": "i",
             "offset": 213,
+            "order": 54,
             "size": 4
         },
         "ptr_movevars": {
             "t": "i",
             "offset": 217,
+            "order": 55,
             "size": 4
         },
         "viewport": {
             "t": "16s",
             "offset": 221,
+            "order": 56,
             "size": 16
         },
         "next_view": {
             "t": "i",
             "offset": 237,
+            "order": 57,
             "size": 4
         },
         "only_client_draw": {
             "t": "i",
             "offset": 241,
+            "order": 58,
             "size": 4
         },
         "lerp_msec": {
             "t": "h",
             "offset": 245,
+            "order": 59,
             "size": 2
         },
         "msec": {
             "t": "h",
             "offset": 247,
+            "order": 60,
             "size": 2
         },
         "viewangles2_x": {
             "t": "f",
             "offset": 249,
+            "order": 61,
             "size": 4
         },
         "viewangles2_y": {
             "t": "f",
             "offset": 253,
+            "order": 62,
             "size": 4
         },
         "viewangles2_z": {
             "t": "f",
             "offset": 257,
+            "order": 63,
             "size": 4
         },
         "forwardmove": {
             "t": "f",
             "offset": 261,
+            "order": 64,
             "size": 4
         },
         "sidemove": {
             "t": "f",
             "offset": 265,
+            "order": 65,
             "size": 4
         },
         "upmove": {
             "t": "f",
             "offset": 269,
+            "order": 66,
             "size": 4
         },
         "lightlevel": {
             "t": "h",
             "offset": 273,
+            "order": 67,
             "size": 2
         },
         "buttons": {
             "t": "H",
             "offset": 275,
+            "order": 68,
             "size": 2
         },
         "impulse": {
             "t": "b",
             "offset": 277,
+            "order": 69,
             "size": 1
         },
         "weaponselect": {
             "t": "b",
             "offset": 278,
+            "order": 70,
             "size": 1
         },
         "align": {
             "t": "h",
             "offset": 279,
+            "order": 71,
             "size": 2
         },
         "impact_index": {
             "t": "i",
             "offset": 281,
+            "order": 72,
             "size": 4
         },
         "impact_position_x": {
             "t": "f",
             "offset": 285,
+            "order": 73,
             "size": 4
         },
         "impact_position_y": {
             "t": "f",
             "offset": 289,
+            "order": 74,
             "size": 4
         },
         "impact_position_z": {
             "t": "f",
             "offset": 293,
+            "order": 75,
             "size": 4
         },
         "gravity": {
             "t": "f",
             "offset": 297,
+            "order": 76,
             "size": 4
         },
         "stopspeed": {
             "t": "f",
             "offset": 301,
+            "order": 77,
             "size": 4
         },
         "maxspeed": {
             "t": "f",
             "offset": 305,
+            "order": 78,
             "size": 4
         },
         "spectatormaxspeed": {
             "t": "f",
             "offset": 309,
+            "order": 79,
             "size": 4
         },
         "accelerate": {
             "t": "f",
             "offset": 313,
+            "order": 80,
             "size": 4
         },
         "airaccelerate": {
             "t": "f",
             "offset": 317,
+            "order": 81,
             "size": 4
         },
         "wateraccelerate": {
             "t": "f",
             "offset": 321,
+            "order": 82,
             "size": 4
         },
         "friction": {
             "t": "f",
             "offset": 325,
+            "order": 83,
             "size": 4
         },
         "edgefriction": {
             "t": "f",
             "offset": 329,
+            "order": 84,
             "size": 4
         },
         "waterfriction": {
             "t": "f",
             "offset": 333,
+            "order": 85,
             "size": 4
         },
         "entgravity": {
             "t": "f",
             "offset": 337,
+            "order": 86,
             "size": 4
         },
         "bounce": {
             "t": "f",
             "offset": 341,
+            "order": 87,
             "size": 4
         },
         "stepsize": {
             "t": "f",
             "offset": 345,
+            "order": 88,
             "size": 4
         },
         "maxvelocity": {
             "t": "f",
             "offset": 349,
+            "order": 89,
             "size": 4
         },
         "zmax": {
             "t": "f",
             "offset": 353,
+            "order": 90,
             "size": 4
         },
         "wave_height": {
             "t": "f",
             "offset": 357,
+            "order": 91,
             "size": 4
         },
         "footsteps": {
             "t": "i",
             "offset": 361,
+            "order": 92,
             "size": 4
         },
         "sky_name": {
             "t": "32s",
             "offset": 365,
+            "order": 93,
             "size": 32
         },
         "rollangle": {
             "t": "f",
             "offset": 397,
+            "order": 94,
             "size": 4
         },
         "rollspeed": {
             "t": "f",
             "offset": 401,
+            "order": 95,
             "size": 4
         },
         "skycolor_r": {
             "t": "f",
             "offset": 405,
+            "order": 96,
             "size": 4
         },
         "skycolor_g": {
             "t": "f",
             "offset": 409,
+            "order": 97,
             "size": 4
         },
         "skycolor_b": {
             "t": "f",
             "offset": 413,
+            "order": 98,
             "size": 4
         },
         "skyvec_x": {
             "t": "f",
             "offset": 417,
+            "order": 99,
             "size": 4
         },
         "skyvec_y": {
             "t": "f",
             "offset": 421,
+            "order": 100,
             "size": 4
         },
         "skyvec_z": {
             "t": "f",
             "offset": 425,
+            "order": 101,
             "size": 4
         },
         "view_x": {
             "t": "f",
             "offset": 429,
+            "order": 102,
             "size": 4
         },
         "view_y": {
             "t": "f",
             "offset": 433,
+            "order": 103,
             "size": 4
         },
         "view_z": {
             "t": "f",
             "offset": 437,
+            "order": 104,
             "size": 4
         },
         "viewmodel": {
             "t": "i",
             "offset": 441,
+            "order": 105,
             "size": 4
         },
         "incoming_sequence": {
             "t": "i",
             "offset": 445,
+            "order": 106,
             "size": 4
         },
         "incoming_acknowledged": {
             "t": "i",
             "offset": 449,
+            "order": 107,
             "size": 4
         },
         "incoming_reliable_acknowledged": {
             "t": "i",
             "offset": 453,
+            "order": 108,
             "size": 4
         },
         "incoming_reliable_sequence": {
             "t": "i",
             "offset": 457,
+            "order": 109,
             "size": 4
         },
         "outgoing_sequence": {
             "t": "i",
             "offset": 461,
+            "order": 110,
             "size": 4
         },
         "reliable_sequence": {
             "t": "i",
             "offset": 465,
+            "order": 111,
             "size": 4
         },
         "last_reliable_sequence": {
             "t": "i",
             "offset": 469,
+            "order": 112,
             "size": 4
         },
         "msg_length": {
             "t": "i",
             "offset": 473,
+            "order": 113,
             "size": 4
         },
         "msg": {
-            "t": "1s",
+            "t": "",
             "offset": 477,
-            "size": 1
+            "order": 114,
+            "size": 0
         }
     }
 }

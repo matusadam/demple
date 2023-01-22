@@ -4,13 +4,16 @@ s = json.loads(open("netmsgframe_struct.json").read())
 
 new = {'NetMsgFrame':dict()}
 offset = 0
+order = 0
 for field in s:
     name = field[0]
     type = field[1]
     new['NetMsgFrame'][name] = {
         't' : type,
-        'offset' : offset
+        'offset' : offset,
+        'order' : order
     }
+    order += 1
     match type:
         case "B":
             offset += 1
@@ -30,6 +33,8 @@ for field in s:
         case "f":
             offset += 4
             size = 4
+        case "":
+            size = 0
         case _:
             # variable len String 
             typelen = int(type[:-1])

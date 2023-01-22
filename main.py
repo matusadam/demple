@@ -17,12 +17,10 @@ if __name__ == "__main__":
     demo = Demo(args.demofile)
 
     t1 = perf_counter()
-    framecount = demo.parse(['time','vieworg_x','vieworg_y','vieworg_z'])
+    framecount = demo.parse(['time'])
     t2 = perf_counter()
     print(f"Demo.parse fetched {framecount} frames in {(t2-t1):.2f} seconds")
 
     mem = process.memory_info().rss
     print(f"Using {mem} bytes ({(mem / 2**20):.2f} MB) of memory")
 
-    for f in demo.frames:
-        print(f)
